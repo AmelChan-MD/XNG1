@@ -1,21 +1,18 @@
 FROM node:24
 
-# Set direktori kerja
 WORKDIR /app
 
-# Copy dependency dulu (biar cache Docker kepake)
-COPY package*.json ./
+# Aktifkan corepack (Node 24 support)
+RUN corepack enable
 
-# Install dependency production
-RUN npm install --production
+COPY package.json yarn.lock ./
 
-# Copy seluruh source code
+RUN yarn install --production --network-timeout 600000
+
 COPY . .
 
-# ENV flag buat kode lu
 ENV DOCKER=true
 ENV NORTHFLANK=true
 ENV NODE_ENV=production
 
-# Jalankan bot
 CMD ["node", "main.js"]
