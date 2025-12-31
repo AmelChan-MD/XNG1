@@ -1,18 +1,21 @@
 FROM node:24
 
+# Set direktori kerja
 WORKDIR /app
 
-# Copy dependency dulu biar cache kepake
+# Copy dependency dulu (biar cache Docker kepake)
 COPY package*.json ./
 
 # Install dependency production
 RUN npm install --production
 
-# Copy semua source
+# Copy seluruh source code
 COPY . .
 
-# Tanda kalau jalan di Docker (buat matiin auto update kalau perlu)
+# ENV flag buat kode lu
 ENV DOCKER=true
+ENV NORTHFLANK=true
+ENV NODE_ENV=production
 
 # Jalankan bot
 CMD ["node", "main.js"]
