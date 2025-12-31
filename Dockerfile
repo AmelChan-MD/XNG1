@@ -2,17 +2,10 @@ FROM node:24
 
 WORKDIR /app
 
-# Aktifkan corepack (Node 24 support)
-RUN corepack enable
-
-COPY package.json yarn.lock ./
-
-RUN yarn install --production --network-timeout 600000
+COPY package*.json ./
+RUN npm install 
 
 COPY . .
 
-ENV DOCKER=true
-ENV NORTHFLANK=true
-ENV NODE_ENV=production
-
+# Supaya process dianggap "aktif"
 CMD ["node", "main.js"]
