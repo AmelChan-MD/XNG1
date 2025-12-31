@@ -1,7 +1,7 @@
 export default {
   AutoUpdate: 'off',           // on / off
   AutoViewStatus: 'on',
-  type_connection: 'qr',       // 'qr' atau 'pairing'
+  type_connection: 'pairing',       // 'qr' atau 'pairing'
   
   phone_number_bot: '628988219165',
 
