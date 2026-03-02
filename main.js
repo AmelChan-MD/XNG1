@@ -7,36 +7,38 @@ import makeWASocket, {
 
 import fs from "fs";
 import path from "path";
-import qrcode from "qrcode-terminal";
 import { Boom } from "@hapi/boom";
 import pino from "pino";
 import chalk from "chalk";
+import qrcode from "qrcode-terminal";
 
 import config from "./config.js";
 import handleMessage from "./lib/xenovia.js";
 import autoview from "./lib/autoview.js";
 import { cloneOrUpdateRepo } from "./lib/cekUpdate.js";
-import { mylog, warnlog, errorlog, successlog, infolog, banner } from "./lib/color.js";
+import { warnlog, errorlog, successlog, infolog, banner } from "./lib/color.js";
 
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
 let isConnecting = false;
 let reconnectAttempts = 0;
-const MAX_RECONNECT = 10;
+const MAX_RECONNECT = 20;
 
-process.on("uncaughtException", err => {
-  console.log(errorlog("💥 Uncaught Exception:"), err);
-});
+process.on("uncaughtException", err =>
+  console.log(errorlog("💥 Uncaught Exception:"), err)
+);
 
-process.on("unhandledRejection", err => {
-  console.log(errorlog("💥 Unhandled Rejection:"), err);
-});
+process.on("unhandledRejection", err =>
+  console.log(errorlog("💥 Unhandled Rejection:"), err)
+);
 
 console.clear();
 console.log(banner("Xenovia AI"));
 console.log(successlog("🚀 Bot sedang dijalankan...\n"));
 
-main().catch(err => console.log(errorlog("❌ Error utama:"), err));
+main().catch(err =>
+  console.log(errorlog("❌ Error utama:"), err)
+);
 
 async function main() {
   await checkAndUpdate();
@@ -53,14 +55,15 @@ async function checkAndUpdate() {
   const sessionDir = path.join(process.cwd(), "sessions");
   const credsPath = path.join(sessionDir, "creds.json");
 
-  if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
+  if (!fs.existsSync(sessionDir))
+    fs.mkdirSync(sessionDir, { recursive: true });
 
   if (fs.existsSync(credsPath)) {
     try {
-      const raw = fs.readFileSync(credsPath);
-      const parsed = JSON.parse(raw);
-      if (!parsed?.noiseKey) throw new Error("creds.json tidak valid");
-    } catch (e) {
+      const parsed = JSON.parse(fs.readFileSync(credsPath));
+      if (!parsed?.noiseKey)
+        throw new Error("creds.json tidak valid");
+    } catch {
       console.log(warnlog("🧨 Sesi rusak. Reset..."));
       fs.rmSync(sessionDir, { recursive: true, force: true });
     }
@@ -72,46 +75,68 @@ async function connectToWhatsApp() {
   isConnecting = true;
 
   const sessionDir = path.join(process.cwd(), "sessions");
-  if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
 
-  const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
+  const { state, saveCreds } =
+    await useMultiFileAuthState(sessionDir);
 
-  let version;
-  try {
-    const fetched = await fetchLatestBaileysVersion();
-    version = fetched.version;
-  } catch {
-    console.log(warnlog("⚠️ Gagal fetch versi terbaru. Pakai default."));
-    version = undefined;
-  }
+  const { version } =
+    await fetchLatestBaileysVersion();
 
   const sock = makeWASocket({
     version,
     logger: pino({ level: "silent" }),
     auth: {
       creds: state.creds,
-      keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "silent" }))
+      keys: makeCacheableSignalKeyStore(
+        state.keys,
+        pino({ level: "silent" })
+      )
     },
-    browser: ["Ubuntu", "Chrome", "24.04.3"],
+
+    browser: ["Ubuntu", "Chrome", "120.0.0"],
     printQRInTerminal: false,
-    syncFullHistory: false
+    syncFullHistory: false,
+
+    // 🔥 Anti 515 settings
+    markOnlineOnConnect: false,
+    keepAliveIntervalMs: 15000,
+    connectTimeoutMs: 20000,
+    defaultQueryTimeoutMs: 0
   });
 
   global.sock = sock;
 
-  autoview(sock); // 👈 pasang di sini
-  
-  // FIXED PAIRING CHECK
-  if (!state.creds.registered && config.type_connection.toLowerCase() === "pairing") {
+  autoview(sock);
+
+  if (
+    !state.creds.registered &&
+    config.type_connection.toLowerCase() === "pairing"
+  ) {
     try {
       console.log(infolog("🕓 Menyiapkan pairing code..."));
       await delay(3000);
-      const code = await sock.requestPairingCode(config.phone_number_bot.trim());
-      console.log(chalk.blue("🔗 PHONE:"), chalk.yellow(config.phone_number_bot));
-      console.log(chalk.green("🔐 CODE:"), chalk.yellow(code));
+      const code =
+        await sock.requestPairingCode(
+          config.phone_number_bot.trim()
+        );
+
+      console.log(
+        chalk.blue("🔗 PHONE:"),
+        chalk.yellow(config.phone_number_bot)
+      );
+      console.log(
+        chalk.green("🔐 CODE:"),
+        chalk.yellow(code)
+      );
     } catch (err) {
-      console.log(errorlog("❌ Gagal pairing:"), err.message);
-      fs.rmSync(sessionDir, { recursive: true, force: true });
+      console.log(
+        errorlog("❌ Gagal pairing:"),
+        err.message
+      );
+      fs.rmSync(sessionDir, {
+        recursive: true,
+        force: true
+      });
       process.exit(1);
     }
   }
@@ -126,10 +151,19 @@ async function connectToWhatsApp() {
     try {
       if (!messages?.[0]) return;
       const msg = messages[0];
-      if (config.SelfMode === "on" && !msg.key.fromMe) return;
+
+      if (
+        config.SelfMode === "on" &&
+        !msg.key.fromMe
+      )
+        return;
+
       await handleMessage(sock, msg);
     } catch (err) {
-      console.log(errorlog("🧨 Gagal handle pesan:"), err);
+      console.log(
+        errorlog("🧨 Gagal handle pesan:"),
+        err
+      );
     }
   });
 
@@ -137,40 +171,78 @@ async function connectToWhatsApp() {
   return sock;
 }
 
-function handleConnectionUpdate(sock, { connection, lastDisconnect, qr }) {
-  if (qr && config.type_connection.toLowerCase() === "qr") {
+function handleConnectionUpdate(
+  sock,
+  { connection, lastDisconnect, qr }
+) {
+  if (
+    qr &&
+    config.type_connection.toLowerCase() === "qr"
+  ) {
     console.clear();
     console.log(banner("Xenovia AI"));
-    console.log(successlog("📲 Scan QR berikut:\n"));
+    console.log(
+      successlog("📲 Scan QR berikut:\n")
+    );
     qrcode.generate(qr, { small: true });
   }
 
   if (connection === "open") {
     reconnectAttempts = 0;
-    console.log(successlog("✅ Terhubung ke WhatsApp!"));
+    console.log(
+      successlog(
+        "✅ Terhubung ke WhatsApp!"
+      )
+    );
   }
 
   if (connection === "close") {
-    const boom = new Boom(lastDisconnect?.error);
-    const code = boom?.output?.statusCode;
+    isConnecting = false;
 
-    console.log(errorlog(`❌ Koneksi putus (${code})`));
+    const boom = new Boom(
+      lastDisconnect?.error
+    );
+    const code =
+      boom?.output?.statusCode;
 
-    if (code === DisconnectReason.loggedOut) {
-      console.log(warnlog("⚠️ Logout. Pairing ulang diperlukan."));
+    console.log(
+      errorlog(
+        `❌ Koneksi putus (${code})`
+      )
+    );
+
+    if (
+      code === DisconnectReason.loggedOut
+    ) {
+      console.log(
+        warnlog(
+          "⚠️ Logout. Pairing ulang diperlukan."
+        )
+      );
       return;
     }
 
-    if (reconnectAttempts >= MAX_RECONNECT) {
-      console.log(errorlog("🚫 Max reconnect tercapai. Stop."));
+    if (
+      reconnectAttempts >= MAX_RECONNECT
+    ) {
+      console.log(
+        errorlog(
+          "🚫 Max reconnect tercapai. Stop."
+        )
+      );
       return;
     }
 
     reconnectAttempts++;
-    console.log(warnlog(`🔁 Reconnect dalam 5 detik... (${reconnectAttempts})`));
+
+    console.log(
+      warnlog(
+        `🔁 Reconnect dalam 3 detik... (${reconnectAttempts})`
+      )
+    );
 
     setTimeout(() => {
       connectToWhatsApp();
-    }, 5000);
+    }, 3000);
   }
-}
+    }
