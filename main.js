@@ -92,7 +92,7 @@ async function connectToWhatsApp() {
       creds: state.creds,
       keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "silent" }))
     },
-    browser: ["Ubuntu", "Chrome", "20.0.04"],
+    browser: ["Ubuntu", "Chrome", "24.04.3"],
     printQRInTerminal: false,
     syncFullHistory: false
   });
