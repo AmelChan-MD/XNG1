@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 
 COPY package*.json ./
 
-RUN npm install --omit=dev --legacy-peer-deps
+RUN npm ci --omit=dev --legacy-peer-deps
 
 COPY . .
 
