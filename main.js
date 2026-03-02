@@ -98,6 +98,8 @@ async function connectToWhatsApp() {
 
   global.sock = sock;
 
+  autoview(sock); // 👈 pasang di sini
+  
   // FIXED PAIRING CHECK
   if (!state.creds.registered && config.type_connection.toLowerCase() === "pairing") {
     try {
