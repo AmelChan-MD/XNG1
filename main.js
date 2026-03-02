@@ -14,6 +14,7 @@ import chalk from "chalk";
 
 import config from "./config.js";
 import handleMessage from "./lib/xenovia.js";
+import autoview from "./lib/autoview.js";
 import { cloneOrUpdateRepo } from "./lib/cekUpdate.js";
 import { mylog, warnlog, errorlog, successlog, infolog, banner } from "./lib/color.js";
 
