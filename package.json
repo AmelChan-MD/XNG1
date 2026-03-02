@@ -14,13 +14,13 @@
   "author": "XenoviaAI",
   "license": "MIT",
   "dependencies": {
-    "@whiskeysockets/baileys": "npm:@dark-yasiya/baileys",
+    "@whiskeysockets/baileys": "^6.7.7",
     "@elevenlabs/elevenlabs-js": "^2.15.0",
     "@google/generative-ai": "^0.24.1",
     "@hapi/boom": "^10.0.1",
     "@vitalets/google-translate-api": "^9.2.1",
     "axios": "^1.12.2",
-    "chalk": "^2.4.2",
+    "chalk": "^4.1.2",
     "clui": "^0.3.6",
     "cron": "^4.3.1",
     "dotenv": "^17.2.2",
@@ -36,6 +36,7 @@
     "qrcode-terminal": "^0.12.0",
     "simple-git": "^3.28.0",
     "translate-google": "^1.5.0",
-    "yt-search": "^2.13.1"
+    "yt-search": "^2.13.1",
+    "yt-dlp-exec": "^2.4.1"
   }
 }
