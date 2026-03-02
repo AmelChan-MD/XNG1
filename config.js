@@ -3,7 +3,7 @@ export default {
   AutoViewStatus: 'on',
   type_connection: 'pairing',       // 'qr' atau 'pairing'
   
-  phone_number_bot: '6282234856655',
+  phone_number_bot: '628988219165',
 
   packname: 'AlunaAI',
   author: 'Xenovia.Inc',
