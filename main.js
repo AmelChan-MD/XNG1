@@ -1,10 +1,11 @@
-import {
-  makeWASocket,
+conts baileys = (await import("@adiwajshing/baileys")
+const makeWASocket = baileys.default;
+const {
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
   makeCacheableSignalKeyStore
-} from "@rexxhayanasi/elaina-baileys";
+} = baileys;
 
 import fs from "fs";
 import path from "path";
@@ -247,3 +248,4 @@ function handleConnectionUpdate(
     }, 3000);
   }
     }
+    
