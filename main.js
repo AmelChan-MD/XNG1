@@ -3,7 +3,7 @@ import makeWASocket, {
   DisconnectReason,
   fetchLatestBaileysVersion,
   makeCacheableSignalKeyStore
-} from "@whiskeysockets/baileys";
+} from "@rexxhayanasi/elaina-baileys";
 
 import fs from "fs";
 import path from "path";
