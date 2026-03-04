@@ -14,7 +14,7 @@
   "author": "XenoviaAI",
   "license": "MIT",
   "dependencies": {
-    "@whiskeysockets/baileys": "latest",
+    "@adiwajshing/baileys": "npm:@rexxhayanasi/elaina-baileys",
     "@elevenlabs/elevenlabs-js": "^2.15.0",
     "@google/generative-ai": "^0.24.1",
     "@hapi/boom": "^10.0.1",
