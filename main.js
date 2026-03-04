@@ -1,4 +1,4 @@
-conts baileys = (await import("@adiwajshing/baileys")
+const baileys = (await import("@adiwajshing/baileys")
 const makeWASocket = baileys.default;
 const {
   useMultiFileAuthState,
