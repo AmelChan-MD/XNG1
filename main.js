@@ -95,7 +95,7 @@ async function connectToWhatsApp() {
 
     browser: ["Ubuntu", "Chrome", "120.0.0"],
     printQRInTerminal: false,
-    syncFullHistory: false,
+    syncFullHistory: true,
 
     // 🔥 Anti 515 settings
     markOnlineOnConnect: false,
