@@ -1,11 +1,11 @@
-const baileys = await import("@adiwajshing/baileys");
-const makeWASocket = baileys.default;
-const {
+// GANTI BARIS IMPORT INI!
+import { 
+  makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
   makeCacheableSignalKeyStore
-} = baileys;
+} from "baileyz";
 
 import fs from "fs";
 import path from "path";
@@ -49,8 +49,7 @@ async function main() {
 
 async function checkAndUpdate() {
   if (config.AutoUpdate === "on") {
-    console.log(infolog("[🔄] Mengecek update dari GitHub..."));
-    await cloneOrUpdateRepo();
+    console.log(infolog("[🔄] Mengecek update dari GitHub..."));    await cloneOrUpdateRepo();
     console.log(successlog("[✅] Update selesai."));
   }
 
@@ -94,15 +93,12 @@ async function connectToWhatsApp() {
         pino({ level: "silent" })
       )
     },
-
-    browser: ["Ubuntu", "Chrome", "120.0.0"],
+    browser: ["Ubuntu", "Chrome", "24.04.3"],
     printQRInTerminal: false,
-    syncFullHistory: true,
-
+    syncFullHistory: false,
     // 🔥 Anti 515 settings
     markOnlineOnConnect: false,
-    keepAliveIntervalMs: 15000,
-    connectTimeoutMs: 20000,
+    keepAliveIntervalMs: 15000,    connectTimeoutMs: 60000, 
     defaultQueryTimeoutMs: 0
   });
 
@@ -110,17 +106,18 @@ async function connectToWhatsApp() {
 
   autoview(sock);
 
+  // Logic Pairing Code
   if (
     !state.creds.registered &&
     config.type_connection.toLowerCase() === "pairing"
   ) {
     try {
       console.log(infolog("🕓 Menyiapkan pairing code..."));
-      await delay(3000);
-      const code =
-        await sock.requestPairingCode(
-          config.phone_number_bot.trim()
-        );
+      await delay(4000); 
+      
+      const code = await sock.requestPairingCode(
+        config.phone_number_bot.trim()
+      );
 
       console.log(
         chalk.blue("🔗 PHONE:"),
@@ -130,16 +127,37 @@ async function connectToWhatsApp() {
         chalk.green("🔐 CODE:"),
         chalk.yellow(code)
       );
+      console.log(successlog("✅ Masukkan kode di HP WhatsApp lu sekarang!"));
+      
+      reconnectAttempts = 0; 
+      
     } catch (err) {
-      console.log(
-        errorlog("❌ Gagal pairing:"),
-        err.message
-      );
-      fs.rmSync(sessionDir, {
-        recursive: true,
-        force: true
-      });
-      process.exit(1);
+      const errorMsg = err.message || String(err);
+      console.log(errorlog("❌ Gagal pairing:"), errorMsg);
+
+      const isFatalError = 
+        errorMsg.includes("Invalid phone number") || 
+        errorMsg.includes("rate-overlimit") ||
+        errorMsg.includes("403");
+
+      if (isFatalError) {
+        console.log(errorlog("⚠️ Error Fatal: Nomor salah atau dibanned. Hapus session manual."));
+        isConnecting = false;
+        return; 
+      }
+
+      console.log(warnlog(`🔄 Koneksi bermasalah. Coba ulang dalam 5 detik... (Percobaan ${reconnectAttempts + 1})`));
+            await delay(5000);
+      isConnecting = false;
+      
+      if (reconnectAttempts < MAX_RECONNECT) {
+          reconnectAttempts++;
+          connectToWhatsApp(); 
+      } else {
+          console.log(errorlog("🚫 Max percobaan pairing gagal. Stop dulu."));
+          isConnecting = false;
+      }
+      return; 
     }
   }
 
@@ -178,8 +196,7 @@ function handleConnectionUpdate(
   { connection, lastDisconnect, qr }
 ) {
   if (
-    qr &&
-    config.type_connection.toLowerCase() === "qr"
+    qr &&    config.type_connection.toLowerCase() === "qr"
   ) {
     console.clear();
     console.log(banner("Xenovia AI"));
@@ -204,8 +221,7 @@ function handleConnectionUpdate(
     const boom = new Boom(
       lastDisconnect?.error
     );
-    const code =
-      boom?.output?.statusCode;
+    const code = boom?.output?.statusCode;
 
     console.log(
       errorlog(
@@ -213,25 +229,13 @@ function handleConnectionUpdate(
       )
     );
 
-    if (
-      code === DisconnectReason.loggedOut
-    ) {
-      console.log(
-        warnlog(
-          "⚠️ Logout. Pairing ulang diperlukan."
-        )
-      );
+    if (code === DisconnectReason.loggedOut) {
+      console.log(warnlog("⚠️ Logout. Pairing ulang diperlukan."));
       return;
     }
 
-    if (
-      reconnectAttempts >= MAX_RECONNECT
-    ) {
-      console.log(
-        errorlog(
-          "🚫 Max reconnect tercapai. Stop."
-        )
-      );
+    if (reconnectAttempts >= MAX_RECONNECT) {
+      console.log(errorlog("🚫 Max reconnect tercapai. Stop."));
       return;
     }
 
@@ -242,10 +246,8 @@ function handleConnectionUpdate(
         `🔁 Reconnect dalam 3 detik... (${reconnectAttempts})`
       )
     );
-
     setTimeout(() => {
       connectToWhatsApp();
     }, 3000);
   }
-    }
-    
+}
