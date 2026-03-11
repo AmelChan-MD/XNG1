@@ -1,12 +1,11 @@
-// GANTI BARIS IMPORT INI!
 import { 
   makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
-  makeCacheableSignalKeyStore
-} from "@kelvdra/baileys";
-
+  makeCacheableSignalKeyStore,
+  proto 
+} from "@whiskeysockets/baileys";
 import fs from "fs";
 import path from "path";
 import { Boom } from "@hapi/boom";
