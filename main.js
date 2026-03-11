@@ -5,7 +5,7 @@ import {
   DisconnectReason,
   fetchLatestBaileysVersion,
   makeCacheableSignalKeyStore
-} from "baileyz";
+} from "@kelvdra/baileys";
 
 import fs from "fs";
 import path from "path";
